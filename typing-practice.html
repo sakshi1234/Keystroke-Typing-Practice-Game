@@ -1,0 +1,1369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>Keystroke — Typing Practice</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap');
+
+/* ============ THEME TOKENS ============ */
+:root, [data-theme="ink"]{
+  --bg:#12141a; --bg-2:#0c0e13;
+  --surface:#1b1e27; --surface-2:#242835; --surface-3:#2e3342;
+  --text:#edEdf0; --text-dim:#8a8f9e; --text-faint:#565b6b;
+  --accent:#e24e3f; --accent-2:#4fd1a5; --gold:#e8b94d;
+  --correct:#4fd1a5; --incorrect:#e24e3f; --current:#e8b94d;
+  --border:#2e3342; --shadow: 0 20px 60px rgba(0,0,0,.45);
+  --radius:14px;
+}
+[data-theme="light"]{
+  --bg:#f3f1ec; --bg-2:#e8e4db;
+  --surface:#ffffff; --surface-2:#f2efe8; --surface-3:#e9e4d8;
+  --text:#20211f; --text-dim:#5f6259; --text-faint:#9a9c93;
+  --accent:#b5432f; --accent-2:#2f8f6a; --gold:#a8781f;
+  --correct:#2f8f6a; --incorrect:#b5432f; --current:#a8781f;
+  --border:#ddd7c8; --shadow: 0 16px 40px rgba(30,25,10,.10);
+  --radius:14px;
+}
+[data-theme="cyberpunk"]{
+  --bg:#0a0518; --bg-2:#120a26;
+  --surface:#181030; --surface-2:#211640; --surface-3:#2c1c54;
+  --text:#f4e9ff; --text-dim:#b199d6; --text-faint:#6d5a94;
+  --accent:#ff2e88; --accent-2:#00f0ff; --gold:#ffe14d;
+  --correct:#00f0ff; --incorrect:#ff2e88; --current:#ffe14d;
+  --border:#3a2566; --shadow: 0 0 60px rgba(255,46,136,.25);
+  --radius:6px;
+}
+[data-theme="neon"]{
+  --bg:#050708; --bg-2:#0a0d0e;
+  --surface:#0f1416; --surface-2:#141a1d; --surface-3:#1b2226;
+  --text:#eafff4; --text-dim:#7fa89a; --text-faint:#3d534c;
+  --accent:#ff3d5a; --accent-2:#39ff88; --gold:#ffd23d;
+  --correct:#39ff88; --incorrect:#ff3d5a; --current:#39ff88;
+  --border:#1e2a27; --shadow: 0 0 50px rgba(57,255,136,.15);
+  --radius:4px;
+}
+[data-theme="minimal"]{
+  --bg:#fafafa; --bg-2:#f2f2f2;
+  --surface:#ffffff; --surface-2:#f5f5f5; --surface-3:#ececec;
+  --text:#171717; --text-dim:#737373; --text-faint:#b0b0b0;
+  --accent:#171717; --accent-2:#4a7c59; --gold:#8a7a3a;
+  --correct:#4a7c59; --incorrect:#c0392b; --current:#171717;
+  --border:#e5e5e5; --shadow: 0 8px 24px rgba(0,0,0,.06);
+  --radius:2px;
+}
+[data-theme="retro"]{
+  --bg:#0a1208; --bg-2:#050a04;
+  --surface:#0f1c0b; --surface-2:#132410; --surface-3:#1a2f14;
+  --text:#7dff8f; --text-dim:#4a9e55; --text-faint:#2c5c32;
+  --accent:#ffb000; --accent-2:#7dff8f; --gold:#ffb000;
+  --correct:#7dff8f; --incorrect:#ff5050; --current:#ffb000;
+  --border:#1f3a1a; --shadow: 0 0 40px rgba(125,255,143,.12);
+  --radius:0px;
+}
+
+*{box-sizing:border-box; margin:0; padding:0;}
+html{-webkit-tap-highlight-color:transparent;}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:'Inter',sans-serif;
+  min-height:100vh;
+  transition:background .35s ease,color .35s ease;
+  overflow-x:hidden;
+}
+body::before{
+  content:'';
+  position:fixed; inset:0;
+  background:
+    radial-gradient(ellipse 900px 500px at 15% -10%, color-mix(in srgb, var(--accent) 14%, transparent), transparent),
+    radial-gradient(ellipse 700px 500px at 100% 10%, color-mix(in srgb, var(--accent-2) 10%, transparent), transparent);
+  pointer-events:none; z-index:0;
+}
+::selection{ background:var(--accent); color:#fff; }
+button{ font-family:inherit; cursor:pointer; }
+input, select{ font-family:inherit; }
+a{ color:inherit; }
+
+.wrap{ position:relative; z-index:1; max-width:1120px; margin:0 auto; padding:20px 20px 60px; }
+
+/* ============ NAV ============ */
+.topbar{
+  display:flex; align-items:center; justify-content:space-between;
+  gap:12px; margin-bottom:26px; flex-wrap:wrap;
+}
+.brand{ display:flex; align-items:center; gap:10px; }
+.brand-mark{
+  width:38px; height:38px; border-radius:10px;
+  background:linear-gradient(135deg,var(--accent),var(--gold));
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Space Mono',monospace; font-weight:700; color:#fff; font-size:18px;
+  box-shadow:0 6px 18px color-mix(in srgb, var(--accent) 45%, transparent);
+}
+.brand-name{ font-family:'Space Mono',monospace; font-weight:700; font-size:20px; letter-spacing:.5px; }
+.brand-sub{ font-size:11px; color:var(--text-dim); letter-spacing:1.5px; text-transform:uppercase; margin-top:-2px;}
+
+.navtabs{ display:flex; gap:6px; background:var(--surface); padding:5px; border-radius:12px; border:1px solid var(--border); flex-wrap:wrap;}
+.navtab{
+  background:transparent; border:none; color:var(--text-dim);
+  padding:8px 14px; border-radius:8px; font-size:13px; font-weight:600;
+  display:flex; align-items:center; gap:6px; transition:.2s;
+  white-space:nowrap;
+}
+.navtab:hover{ color:var(--text); background:var(--surface-2); }
+.navtab.active{ background:var(--accent); color:#fff; }
+
+.hud{ display:flex; align-items:center; gap:14px; }
+.hud-chip{
+  display:flex; align-items:center; gap:6px;
+  background:var(--surface); border:1px solid var(--border);
+  padding:7px 12px; border-radius:999px; font-size:13px; font-weight:600;
+}
+.theme-select{
+  background:var(--surface); color:var(--text); border:1px solid var(--border);
+  padding:8px 10px; border-radius:10px; font-size:13px; font-weight:600;
+}
+
+/* ============ VIEWS ============ */
+.view{ display:none; animation:fadein .35s ease; }
+.view.active{ display:block; }
+@keyframes fadein{ from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:translateY(0);} }
+
+.panel{
+  background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+  padding:24px; box-shadow:var(--shadow);
+}
+.grid2{ display:grid; grid-template-columns:1.6fr 1fr; gap:18px; }
+@media(max-width:860px){ .grid2{ grid-template-columns:1fr; } }
+
+.section-title{
+  font-family:'Space Mono',monospace; font-size:13px; letter-spacing:2px;
+  text-transform:uppercase; color:var(--text-dim); margin-bottom:14px;
+  display:flex; align-items:center; gap:8px;
+}
+.section-title::before{ content:''; width:16px; height:2px; background:var(--accent); display:inline-block;}
+
+/* ---- setup screen ---- */
+.option-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(90px,1fr)); gap:10px; }
+.option-btn{
+  background:var(--surface-2); border:1px solid var(--border); color:var(--text);
+  padding:14px 8px; border-radius:10px; font-weight:700; font-size:14px;
+  text-align:center; transition:.15s;
+}
+.option-btn:hover{ border-color:var(--accent); transform:translateY(-2px); }
+.option-btn.selected{ background:var(--accent); border-color:var(--accent); color:#fff; }
+.option-btn small{ display:block; font-weight:500; font-size:10.5px; opacity:.75; margin-top:2px; text-transform:uppercase; letter-spacing:.5px;}
+
+.custom-timer{ display:flex; gap:8px; margin-top:10px; align-items:center; }
+.custom-timer input{
+  width:90px; background:var(--surface-2); border:1px solid var(--border); color:var(--text);
+  padding:10px 12px; border-radius:8px; font-size:14px;
+}
+.field-block{ margin-bottom:22px; }
+.field-label{ font-size:12px; color:var(--text-faint); text-transform:uppercase; letter-spacing:1px; margin-bottom:8px; font-weight:700;}
+
+.start-btn{
+  width:100%; padding:16px; border:none; border-radius:12px; margin-top:6px;
+  background:linear-gradient(135deg,var(--accent), color-mix(in srgb, var(--accent) 60%, var(--gold)));
+  color:#fff; font-weight:800; font-size:16px; letter-spacing:.5px;
+  box-shadow:0 10px 30px color-mix(in srgb, var(--accent) 40%, transparent);
+  transition:.2s;
+}
+.start-btn:hover{ transform:translateY(-2px); box-shadow:0 14px 36px color-mix(in srgb, var(--accent) 55%, transparent); }
+.start-btn:active{ transform:translateY(0); }
+
+.profile-mini{ display:flex; flex-direction:column; gap:16px; }
+.pm-row{ display:flex; align-items:center; justify-content:space-between; }
+.pm-level{
+  display:flex; align-items:center; gap:12px;
+}
+.pm-badge{
+  width:52px;height:52px;border-radius:50%;
+  background:conic-gradient(var(--accent) calc(var(--xp-pct,0)*1%), var(--surface-3) 0);
+  display:flex; align-items:center; justify-content:center; flex-shrink:0;
+}
+.pm-badge-inner{
+  width:42px;height:42px;border-radius:50%; background:var(--surface);
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Space Mono',monospace; font-weight:700; font-size:13px;
+}
+.pm-stat{ text-align:right; }
+.pm-stat b{ font-family:'Space Mono',monospace; font-size:18px; display:block; }
+.pm-stat span{ font-size:11px; color:var(--text-dim); text-transform:uppercase; letter-spacing:.5px; }
+
+.xpbar-track{ height:8px; border-radius:6px; background:var(--surface-3); overflow:hidden; margin-top:4px;}
+.xpbar-fill{ height:100%; border-radius:6px; background:linear-gradient(90deg,var(--accent),var(--gold)); transition:width .5s ease; }
+
+.daily-card{
+  border:1px dashed var(--accent-2); border-radius:10px; padding:12px 14px;
+  display:flex; align-items:center; justify-content:space-between; gap:10px;
+  background:color-mix(in srgb, var(--accent-2) 8%, transparent);
+}
+.daily-card b{ font-size:13px; }
+.daily-card p{ font-size:11px; color:var(--text-dim); margin-top:2px; }
+.mini-btn{
+  background:var(--surface-3); border:1px solid var(--border); color:var(--text);
+  padding:7px 12px; border-radius:8px; font-size:12px; font-weight:700; white-space:nowrap;
+}
+.mini-btn:hover{ border-color:var(--accent-2); }
+
+/* ---- typing screen ---- */
+.stat-strip{
+  display:grid; grid-template-columns:repeat(5,1fr); gap:10px; margin-bottom:18px;
+}
+.stat-box{
+  background:var(--surface); border:1px solid var(--border); border-radius:12px;
+  padding:12px 10px; text-align:center;
+}
+.stat-box b{ font-family:'Space Mono',monospace; font-size:22px; display:block; }
+.stat-box span{ font-size:10px; color:var(--text-dim); text-transform:uppercase; letter-spacing:1px; }
+@media(max-width:700px){ .stat-strip{ grid-template-columns:repeat(3,1fr); } .stat-box:nth-child(4),.stat-box:nth-child(5){display:none;} }
+
+.progress-track{ height:6px; background:var(--surface-2); border-radius:6px; overflow:hidden; margin-bottom:20px; }
+.progress-fill{ height:100%; background:linear-gradient(90deg,var(--accent-2),var(--accent)); width:0%; transition:width .2s linear; }
+
+.level-tag{
+  display:inline-flex; align-items:center; gap:6px; font-size:11px; font-weight:700;
+  color:var(--text-dim); text-transform:uppercase; letter-spacing:1px; margin-bottom:10px;
+}
+.level-tag b{ color:var(--accent); font-family:'Space Mono',monospace; }
+
+.type-area{
+  font-family:'JetBrains Mono',monospace; font-size:clamp(17px,2.4vw,24px);
+  line-height:1.9; letter-spacing:.3px; padding:22px 24px; border-radius:var(--radius);
+  background:var(--surface-2); border:1px solid var(--border); position:relative;
+  user-select:none; -webkit-user-select:none; min-height:160px;
+}
+.type-area.blurred{ filter:blur(5px); opacity:.5; }
+.type-area .ch{ position:relative; white-space:pre-wrap; }
+.ch.correct{ color:var(--correct); }
+.ch.incorrect{ color:var(--incorrect); background:color-mix(in srgb, var(--incorrect) 18%, transparent); border-radius:2px; }
+.ch.pending{ color:var(--text-faint); }
+.ch.current{ color:var(--text); background:color-mix(in srgb, var(--current) 30%, transparent); border-radius:2px; outline:2px solid var(--current); }
+.hidden-input{ position:absolute; opacity:0; pointer-events:none; height:0; width:0; }
+
+.type-overlay{
+  position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  flex-direction:column; gap:10px; background:color-mix(in srgb, var(--surface) 85%, transparent);
+  border-radius:var(--radius); text-align:center; padding:20px;
+}
+.tap-hint{ font-size:14px; color:var(--text-dim); font-weight:600; }
+
+.typing-controls{ display:flex; justify-content:space-between; align-items:center; margin-top:18px; flex-wrap:wrap; gap:10px; }
+.ghost-btn{
+  background:transparent; border:1px solid var(--border); color:var(--text-dim);
+  padding:10px 16px; border-radius:10px; font-size:13px; font-weight:700;
+}
+.ghost-btn:hover{ color:var(--text); border-color:var(--accent); }
+
+/* ---- results ---- */
+.result-hero{ text-align:center; padding:10px 0 24px; }
+.result-hero .big-wpm{ font-family:'Space Mono',monospace; font-size:clamp(52px,10vw,84px); font-weight:700; line-height:1; background:linear-gradient(135deg,var(--accent),var(--gold)); -webkit-background-clip:text; background-clip:text; color:transparent;}
+.result-hero .big-wpm-label{ color:var(--text-dim); text-transform:uppercase; letter-spacing:2px; font-size:12px; font-weight:700; }
+.result-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin:20px 0; }
+@media(max-width:700px){ .result-grid{ grid-template-columns:repeat(2,1fr);} }
+.result-card{ background:var(--surface-2); border:1px solid var(--border); border-radius:12px; padding:16px 10px; text-align:center;}
+.result-card b{ font-family:'Space Mono',monospace; font-size:20px; display:block; }
+.result-card span{ font-size:10.5px; color:var(--text-dim); text-transform:uppercase; letter-spacing:1px;}
+.reward-strip{ display:flex; gap:10px; flex-wrap:wrap; justify-content:center; margin:18px 0; }
+.reward-pill{
+  display:flex; align-items:center; gap:8px; background:var(--surface-3); border:1px solid var(--border);
+  padding:8px 14px; border-radius:999px; font-size:13px; font-weight:700; animation:pop .4s ease;
+}
+@keyframes pop{ from{ transform:scale(.6); opacity:0;} to{ transform:scale(1); opacity:1;} }
+.result-actions{ display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-top:10px;}
+
+/* ---- profile / achievements / leaderboard / heatmap ---- */
+.card-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:14px; }
+.badge-card{
+  background:var(--surface-2); border:1px solid var(--border); border-radius:12px; padding:16px; text-align:center;
+  transition:.2s;
+}
+.badge-card.locked{ opacity:.35; filter:grayscale(1); }
+.badge-card .icon{ font-size:34px; margin-bottom:8px; }
+.badge-card b{ display:block; font-size:14px; margin-bottom:4px;}
+.badge-card p{ font-size:11.5px; color:var(--text-dim); }
+
+table.lb{ width:100%; border-collapse:collapse; font-size:14px;}
+table.lb th{ text-align:left; padding:10px 12px; color:var(--text-dim); font-size:11px; text-transform:uppercase; letter-spacing:1px; border-bottom:1px solid var(--border);}
+table.lb td{ padding:10px 12px; border-bottom:1px solid var(--border); }
+table.lb tr:last-child td{ border-bottom:none; }
+.rank{ font-family:'Space Mono',monospace; font-weight:700; color:var(--accent); }
+
+.heatmap-key-row{ display:flex; justify-content:center; gap:5px; margin-bottom:6px; flex-wrap:wrap;}
+.hkey{
+  min-width:36px; height:40px; border-radius:6px; background:var(--surface-2); border:1px solid var(--border);
+  display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; font-family:'JetBrains Mono',monospace;
+  flex:1;
+}
+.history-list{ display:flex; flex-direction:column; gap:8px; max-height:320px; overflow-y:auto; }
+.history-item{ display:flex; justify-content:space-between; align-items:center; padding:10px 12px; background:var(--surface-2); border-radius:10px; font-size:13px; border:1px solid var(--border);}
+.history-item span{ color:var(--text-dim); font-size:11px; }
+
+/* ---- misc ---- */
+.empty-note{ color:var(--text-faint); font-size:13px; text-align:center; padding:30px 10px; }
+.streak-flame{ font-size:15px; }
+.toast-wrap{ position:fixed; top:16px; right:16px; z-index:999; display:flex; flex-direction:column; gap:8px; }
+.toast{
+  background:var(--surface); border:1px solid var(--border); border-left:4px solid var(--accent);
+  padding:12px 16px; border-radius:10px; box-shadow:var(--shadow); font-size:13px; font-weight:600;
+  min-width:220px; animation:slidein .3s ease;
+}
+@keyframes slidein{ from{ transform:translateX(120%); opacity:0;} to{ transform:translateX(0); opacity:1;} }
+
+#confetti-canvas{ position:fixed; inset:0; pointer-events:none; z-index:998; }
+
+footer{ text-align:center; color:var(--text-faint); font-size:11px; margin-top:30px; letter-spacing:.5px; }
+
+/* scrollbar */
+::-webkit-scrollbar{ width:8px; height:8px; }
+::-webkit-scrollbar-thumb{ background:var(--surface-3); border-radius:8px; }
+
+@media (prefers-reduced-motion: reduce){
+  *{ animation-duration:.001s !important; transition-duration:.001s !important; }
+}
+</style>
+</head>
+<body data-theme="ink">
+<canvas id="confetti-canvas"></canvas>
+<div class="toast-wrap" id="toastWrap"></div>
+
+<div class="wrap">
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-mark">&gt;_</div>
+      <div>
+        <div class="brand-name">KEYSTROKE</div>
+        <div class="brand-sub">typing dojo</div>
+      </div>
+    </div>
+    <div class="navtabs" id="navtabs">
+      <button class="navtab active" data-view="setup">Practice</button>
+      <button class="navtab" data-view="profile">Profile</button>
+      <button class="navtab" data-view="achievements">Achievements</button>
+      <button class="navtab" data-view="leaderboard">Leaderboard</button>
+      <button class="navtab" data-view="heatmap">Heatmap</button>
+    </div>
+    <div class="hud">
+      <div class="hud-chip">🪙 <span id="hudCoins">0</span></div>
+      <div class="hud-chip">⚡ <span id="hudStreak">0</span></div>
+      <select class="theme-select" id="themeSelect">
+        <option value="ink">Ink & Ribbon</option>
+        <option value="light">Light</option>
+        <option value="cyberpunk">Cyberpunk</option>
+        <option value="neon">Neon</option>
+        <option value="minimal">Minimal</option>
+        <option value="retro">Retro Terminal</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- ============ SETUP VIEW ============ -->
+  <div class="view active" id="view-setup">
+    <div class="grid2">
+      <div class="panel">
+        <div class="section-title">Duration</div>
+        <div class="option-grid" id="durationOptions">
+          <button class="option-btn" data-dur="30">30<small>sec</small></button>
+          <button class="option-btn selected" data-dur="60">1<small>min</small></button>
+          <button class="option-btn" data-dur="180">3<small>min</small></button>
+          <button class="option-btn" data-dur="300">5<small>min</small></button>
+          <button class="option-btn" data-dur="custom">Custom</button>
+        </div>
+        <div class="custom-timer" id="customTimerWrap" style="display:none;">
+          <input type="number" id="customSeconds" min="5" max="3600" placeholder="Seconds" value="90">
+          <span style="color:var(--text-dim); font-size:13px;">seconds</span>
+        </div>
+
+        <div class="field-block" style="margin-top:22px;">
+          <div class="field-label">Category</div>
+          <div class="option-grid" id="categoryOptions"></div>
+        </div>
+
+        <div class="field-block">
+          <div class="field-label">Difficulty</div>
+          <div class="option-grid" id="difficultyOptions">
+            <button class="option-btn selected" data-diff="beginner">Beginner</button>
+            <button class="option-btn" data-diff="intermediate">Intermediate</button>
+            <button class="option-btn" data-diff="advanced">Advanced</button>
+          </div>
+        </div>
+
+        <button class="start-btn" id="startBtn">▶ Start Typing Session</button>
+      </div>
+
+      <div class="panel">
+        <div class="section-title">Your Progress</div>
+        <div class="profile-mini">
+          <div class="pm-row pm-level">
+            <div class="pm-badge" id="pmBadgeRing">
+              <div class="pm-badge-inner" id="pmLevelNum">1</div>
+            </div>
+            <div>
+              <b style="font-family:'Space Mono',monospace;" id="pmLevelLabel">Level 1</b>
+              <div class="xpbar-track" style="width:150px;"><div class="xpbar-fill" id="pmXpFill" style="width:0%;"></div></div>
+              <div style="font-size:10.5px; color:var(--text-dim); margin-top:3px;" id="pmXpText">0 / 100 XP</div>
+            </div>
+          </div>
+
+          <div class="pm-row">
+            <div class="pm-stat" style="text-align:left;"><b id="pmBestWpm">0</b><span>Best WPM</span></div>
+            <div class="pm-stat"><b id="pmAvgAcc">0%</b><span>Avg Accuracy</span></div>
+          </div>
+
+          <div class="daily-card">
+            <div>
+              <b>🎯 Daily Challenge</b>
+              <p id="dailyDesc">A fresh passage, bonus rewards.</p>
+            </div>
+            <button class="mini-btn" id="dailyBtn">Start</button>
+          </div>
+
+          <div>
+            <div class="field-label" style="margin-bottom:10px;">Recent Sessions</div>
+            <div class="history-list" id="recentHistory"><div class="empty-note">No sessions yet — type something!</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ TYPING VIEW ============ -->
+  <div class="view" id="view-typing">
+    <div class="panel">
+      <div class="level-tag">Level <b id="typLevel">1</b> &nbsp;·&nbsp; <span id="typCatDiff">General / Beginner</span></div>
+      <div class="stat-strip">
+        <div class="stat-box"><b id="statWpm">0</b><span>WPM</span></div>
+        <div class="stat-box"><b id="statCpm">0</b><span>CPM</span></div>
+        <div class="stat-box"><b id="statAcc">100%</b><span>Accuracy</span></div>
+        <div class="stat-box"><b id="statMistakes">0</b><span>Mistakes</span></div>
+        <div class="stat-box"><b id="statTime">60</b><span>Time Left</span></div>
+      </div>
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+
+      <div class="type-area" id="typeArea" tabindex="0">
+        <span id="typeContent"></span>
+        <div class="type-overlay" id="typeOverlay">
+          <div style="font-size:32px;">⌨️</div>
+          <div class="tap-hint">Click here (or tap on mobile) and start typing to begin</div>
+        </div>
+      </div>
+      <input type="text" class="hidden-input" id="hiddenInput" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
+
+      <div class="typing-controls">
+        <button class="ghost-btn" id="restartBtn">↻ Restart Passage</button>
+        <button class="ghost-btn" id="exitBtn">✕ Exit Session</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ RESULTS VIEW ============ -->
+  <div class="view" id="view-results">
+    <div class="panel">
+      <div class="result-hero">
+        <div class="big-wpm-label">Words Per Minute</div>
+        <div class="big-wpm" id="resWpm">0</div>
+      </div>
+      <div class="result-grid">
+        <div class="result-card"><b id="resAcc">0%</b><span>Accuracy</span></div>
+        <div class="result-card"><b id="resCpm">0</b><span>CPM</span></div>
+        <div class="result-card"><b id="resMistakes">0</b><span>Mistakes</span></div>
+        <div class="result-card"><b id="resChars">0</b><span>Characters Typed</span></div>
+        <div class="result-card"><b id="resTime">0s</b><span>Time Taken</span></div>
+        <div class="result-card"><b id="resBest">0</b><span>Best WPM</span></div>
+        <div class="result-card"><b id="resXp">+0</b><span>XP Earned</span></div>
+        <div class="result-card"><b id="resCoins">+0</b><span>Coins Earned</span></div>
+      </div>
+      <div class="reward-strip" id="rewardStrip"></div>
+      <div class="result-actions">
+        <button class="start-btn" style="width:auto; padding:14px 26px;" id="continueBtn">Continue to Next Level →</button>
+        <button class="ghost-btn" id="retryBtn">Retry This Passage</button>
+        <button class="ghost-btn" id="backToSetupBtn">Change Settings</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ PROFILE VIEW ============ -->
+  <div class="view" id="view-profile">
+    <div class="panel">
+      <div class="section-title">Profile Overview</div>
+      <div class="result-grid" style="grid-template-columns:repeat(4,1fr);">
+        <div class="result-card"><b id="p_xp">0</b><span>Total XP</span></div>
+        <div class="result-card"><b id="p_coins">0</b><span>Coins</span></div>
+        <div class="result-card"><b id="p_level">1</b><span>Current Level</span></div>
+        <div class="result-card"><b id="p_bestwpm">0</b><span>Highest WPM</span></div>
+        <div class="result-card"><b id="p_avgacc">0%</b><span>Average Accuracy</span></div>
+        <div class="result-card"><b id="p_sessions">0</b><span>Sessions Completed</span></div>
+        <div class="result-card"><b id="p_streak">0</b><span>Daily Streak</span></div>
+        <div class="result-card"><b id="p_achievements">0</b><span>Achievements Earned</span></div>
+      </div>
+    </div>
+    <div style="height:16px;"></div>
+    <div class="panel">
+      <div class="section-title">Practice History</div>
+      <div class="history-list" id="fullHistory" style="max-height:420px;"><div class="empty-note">Nothing here yet.</div></div>
+    </div>
+  </div>
+
+  <!-- ============ ACHIEVEMENTS VIEW ============ -->
+  <div class="view" id="view-achievements">
+    <div class="panel">
+      <div class="section-title">Achievement Gallery</div>
+      <div class="card-grid" id="achGrid"></div>
+    </div>
+  </div>
+
+  <!-- ============ LEADERBOARD VIEW ============ -->
+  <div class="view" id="view-leaderboard">
+    <div class="panel">
+      <div class="section-title">Local Leaderboard — Personal Bests</div>
+      <table class="lb">
+        <thead><tr><th>#</th><th>WPM</th><th>Accuracy</th><th>Category</th><th>Time</th><th>Date</th></tr></thead>
+        <tbody id="lbBody"><tr><td colspan="6" class="empty-note">Complete a session to appear here.</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ============ HEATMAP VIEW ============ -->
+  <div class="view" id="view-heatmap">
+    <div class="panel">
+      <div class="section-title">Keyboard Error Heatmap</div>
+      <p style="font-size:13px; color:var(--text-dim); margin-bottom:16px;">Keys glow brighter the more often you mistype them. Practice these to boost your accuracy.</p>
+      <div id="heatmapGrid"></div>
+      <div style="height:20px;"></div>
+      <div class="section-title">Most Frequent Mistakes</div>
+      <div class="history-list" id="errorList"><div class="empty-note">No mistakes logged yet — great job, or you haven't typed yet!</div></div>
+    </div>
+  </div>
+
+  <footer>Keystroke — all progress is saved locally in your browser. No account needed.</footer>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* ============================================================
+   DATA: PASSAGES
+   ============================================================ */
+const PASSAGES = {
+  general: {
+    beginner: [
+      "The sun was warm and the wind was calm. Birds sang in the trees while children played in the park near the lake.",
+      "She likes to read books on rainy days. A cup of tea and a soft blanket make the afternoon feel slow and kind.",
+      "We walked along the beach and watched the waves. The sand was cool under our feet as the sky turned orange."
+    ],
+    intermediate: [
+      "Learning something new, even for ten minutes a day, compounds over time. Small habits, repeated patiently, often outperform grand plans that never survive contact with a Monday morning.",
+      "The market was crowded that morning: vendors calling out prices, the smell of fresh bread drifting between stalls, and a light drizzle that nobody seemed to mind.",
+      "He paused before answering, weighing his words carefully, because he knew that a hasty reply could undo months of careful, quiet trust."
+    ],
+    advanced: [
+      "Despite the forecast — 60% chance of rain, gusts up to 45 mph — the festival organizers pressed on, betting that 3,000+ attendees wouldn't mind a little weather.",
+      "\"Patience,\" she said, \"isn't the absence of urgency; it's the discipline to act well *despite* it.\" He wrote it down: rule #7, underlined twice.",
+      "The invoice (#A-2291) totaled $4,873.50 across 12 line items, yet the client's finance team flagged discrepancies of ~2.3% before approving payment on 09/14."
+    ]
+  },
+  technology: {
+    beginner: [
+      "A computer can help you write, draw, and talk to people far away. Phones and tablets are computers too, just much smaller.",
+      "The internet connects millions of devices around the world. It lets people share photos, videos, and messages in seconds.",
+      "A password keeps your account safe. It is best to use a long password that mixes letters and numbers."
+    ],
+    intermediate: [
+      "Cloud storage lets you save files on remote servers instead of your own device, so you can access them from any computer with an internet connection.",
+      "Artificial intelligence systems learn patterns from large amounts of data, which allows them to make predictions or generate content without being explicitly programmed for every case.",
+      "A firewall monitors incoming and outgoing network traffic and decides whether to allow or block it based on a defined set of security rules."
+    ],
+    advanced: [
+      "The API returned a 429 status code — too many requests — so the client implemented exponential backoff, retrying after 1s, 2s, 4s, and 8s intervals.",
+      "Modern CPUs use out-of-order execution & branch prediction (~95%+ accuracy) to keep pipelines full, squeezing extra IPC out of otherwise stalled instructions.",
+      "\"Zero-downtime deploys,\" the engineer explained, \"require blue-green environments: route 100% traffic to v2 only after health checks pass 3x consecutively.\""
+    ]
+  },
+  programming: {
+    beginner: [
+      "A variable stores a value so a program can use it later. You can name a variable almost anything you like.",
+      "A loop repeats a set of instructions until a condition is met. This saves you from writing the same code many times.",
+      "Functions let you group code together and reuse it. You give a function a name and call it whenever you need it."
+    ],
+    intermediate: [
+      "In most languages, an array is a list of values stored in order, and you can access each item using its index, starting from zero.",
+      "Debugging means finding and fixing errors in code. Good developers read error messages carefully instead of guessing what went wrong.",
+      "Version control tools like Git let teams track changes to code over time, and roll back to an earlier version if something breaks."
+    ],
+    advanced: [
+      "function fib(n) { return n <= 1 ? n : fib(n - 1) + fib(n - 2); } // O(2^n) — memoize for O(n) instead.",
+      "const users = data.filter(u => u.active && u.age >= 18).map(u => ({ ...u, label: `${u.name} (#${u.id})` }));",
+      "try { const res = await fetch(url, { method: 'POST', headers: {'Content-Type':'application/json'} }); if (!res.ok) throw new Error(`HTTP ${res.status}`); } catch (e) { console.error(e); }"
+    ]
+  },
+  science: {
+    beginner: [
+      "Plants need sunlight, water, and air to grow. Their leaves use sunlight to make food in a process called photosynthesis.",
+      "The moon orbits the Earth about once a month. It does not make its own light; it reflects light from the sun.",
+      "Water can be a solid, a liquid, or a gas. Ice, water, and steam are all the same substance in different forms."
+    ],
+    intermediate: [
+      "Gravity is the force that pulls objects toward one another; the more massive an object is, the stronger its gravitational pull on nearby matter.",
+      "Vaccines work by training the immune system to recognize a pathogen, so the body can respond quickly if it encounters the real infection later.",
+      "An ecosystem includes every living organism in an area along with the physical environment they interact with, from soil chemistry to rainfall."
+    ],
+    advanced: [
+      "At 0°C and standard pressure (1 atm), water freezes; but under increased pressure, its melting point actually drops slightly — an unusual property among liquids.",
+      "The mitochondrion produces ATP via oxidative phosphorylation, converting roughly 34 molecules of ATP per glucose molecule under aerobic conditions.",
+      "Einstein's field equations — G_{\\mu\\nu} + \\Lambda g_{\\mu\\nu} = 8\\pi T_{\\mu\\nu} — describe how mass-energy curves spacetime itself."
+    ]
+  },
+  literature: {
+    beginner: [
+      "A story usually has a beginning, a middle, and an end. The main character often wants something and works hard to get it.",
+      "Poems can rhyme, but they do not have to. Some poems just use strong images and feelings to tell a story.",
+      "A library is full of stories waiting to be read. Every book on the shelf was written by someone with something to say."
+    ],
+    intermediate: [
+      "Great characters are defined less by what they say and more by what they choose to do when the cost of doing it is high.",
+      "Foreshadowing is a literary technique where an author hints at events that will happen later, building tension without giving too much away.",
+      "The novel's setting — a quiet coastal town — mirrors its central theme: beneath a calm surface, old secrets wait for the tide to shift."
+    ],
+    advanced: [
+      "\"It was the best of times, it was the worst of times\" — an opening line so quoted it risks losing the paradox it was built to hold.",
+      "The unreliable narrator, common in modernist fiction (think 1920s–1930s), forces readers to question every claim, every memory, every motive on the page.",
+      "Metafiction — fiction that draws attention to its own fictionality — blurs the line between author, narrator, and reader in ways realism rarely dares."
+    ]
+  },
+  quotes: {
+    beginner: [
+      "Small steps, taken every day, are what turn a big goal into something real. Start where you are and keep going.",
+      "A kind word costs nothing to give, yet it can change someone's entire day. Choose kindness whenever you can.",
+      "Mistakes are proof that you are trying. No one learns to walk without falling down a few times first."
+    ],
+    intermediate: [
+      "Discipline is choosing between what you want now and what you want most — a trade that pays off slowly, then all at once.",
+      "The best time to plant a tree was years ago; the second best time is today, because waiting for the perfect moment often means never starting.",
+      "Confidence is not the absence of doubt, but the decision to act anyway, trusting that skill can be built along the way."
+    ],
+    advanced: [
+      "\"Success is not final, failure is not fatal: it is the courage to continue that counts\" — a line worth typing slowly, twice.",
+      "Progress, real progress, rarely announces itself with fireworks; it shows up as 1% improvements stacked quietly over 365 days.",
+      "\"We are what we repeatedly do,\" the old saying goes; excellence, then, is not an act — it's a habit, sharpened daily."
+    ]
+  },
+  stories: {
+    beginner: [
+      "Once there was a small fox who lived at the edge of a forest. Every morning, she watched the sun rise over the hills.",
+      "A boy found an old key in his garden. He wondered what door it might open, and where that door might lead.",
+      "The old lighthouse keeper lit the lamp every night. Ships far out at sea were grateful for its steady light."
+    ],
+    intermediate: [
+      "The village had gone quiet by the time the traveler arrived, his boots heavy with dust, his map torn at the fold where the river used to be.",
+      "She kept the letter in her coat pocket for three years, never reading past the first line, never quite ready to know how it ended.",
+      "Every winter the old bridge groaned under the ice, and every spring the townsfolk repaired it, as if some things were simply meant to be mended."
+    ],
+    advanced: [
+      "By the time the storm broke — 11:47 PM, according to the ship's log — Captain Reyes had already given the order: \"Batten everything; we ride it out.\"",
+      "The archive held 214 boxes, each labeled in a hand no one recognized, until a researcher noticed the initials — J.R. — matched a name erased from every other record.",
+      "\"You have exactly one chance,\" the old locksmith warned, sliding three tumblers into place with a click-click-click, \"and it starts the moment I let go.\""
+    ]
+  }
+};
+
+const CATEGORY_META = {
+  general:     { label:"General",     icon:"📝" },
+  technology:  { label:"Technology",  icon:"💻" },
+  programming: { label:"Programming", icon:"⌨️" },
+  science:     { label:"Science",     icon:"🔬" },
+  literature:  { label:"Literature",  icon:"📖" },
+  quotes:      { label:"Quotes",      icon:"💬" },
+  stories:     { label:"Stories",     icon:"📚" }
+};
+
+const ACHIEVEMENTS = [
+  { id:"bronze",   icon:"🥉", name:"Bronze Typist",   desc:"Reach 20 WPM in a session",       check: s => s.wpm >= 20 },
+  { id:"silver",   icon:"🥈", name:"Silver Typist",   desc:"Reach 40 WPM in a session",       check: s => s.wpm >= 40 },
+  { id:"gold",     icon:"🥇", name:"Gold Typist",     desc:"Reach 60 WPM in a session",       check: s => s.wpm >= 60 },
+  { id:"speed",    icon:"⚡", name:"Speed Demon",     desc:"Reach 80 WPM in a session",       check: s => s.wpm >= 80 },
+  { id:"accuracy", icon:"🎯", name:"Accuracy Master", desc:"Hit 98%+ accuracy in a session",  check: s => s.accuracy >= 98 },
+  { id:"perfect",  icon:"💎", name:"Flawless",        desc:"Complete a session with 100% accuracy", check: s => s.accuracy >= 100 },
+  { id:"streak7",  icon:"🔥", name:"7-Day Streak",    desc:"Practice 7 days in a row",        check: (s,p) => p.streak >= 7 },
+  { id:"streak30", icon:"🔥", name:"30-Day Streak",   desc:"Practice 30 days in a row",       check: (s,p) => p.streak >= 30 },
+  { id:"lvl10",    icon:"🏅", name:"Level 10",        desc:"Reach level 10",                  check: (s,p) => p.level >= 10 },
+  { id:"lvl25",    icon:"🏆", name:"Level 25",        desc:"Reach level 25",                  check: (s,p) => p.level >= 25 },
+  { id:"lvl50",    icon:"👑", name:"Level 50",        desc:"Reach level 50",                  check: (s,p) => p.level >= 50 },
+  { id:"lvl100",   icon:"🌟", name:"Level 100",       desc:"Reach level 100",                 check: (s,p) => p.level >= 100 },
+  { id:"marathon", icon:"🏃", name:"Marathon Typist", desc:"Complete a 5-minute session",     check: s => s.duration >= 300 },
+  { id:"veteran",  icon:"🎖️", name:"Veteran",         desc:"Complete 25 total sessions",      check: (s,p) => p.sessions.length >= 25 },
+  { id:"daily1",   icon:"📅", name:"Challenger",      desc:"Complete a daily challenge",      check: s => !!s.daily }
+];
+
+/* ============================================================
+   STATE / PERSISTENCE
+   ============================================================ */
+const STORAGE_KEY = "keystroke_profile_v1";
+
+function freshProfile(){
+  return {
+    xp:0, coins:0, level:1,
+    bestWPM:0, accuracySum:0, sessionsForAvg:0,
+    sessions:[],           // full history: {date, wpm, cpm, accuracy, mistakes, chars, duration, category, difficulty, xp, coins, daily}
+    achievements:[],       // ids earned
+    streak:0, lastPracticeDay:null,
+    keyErrors:{},          // char -> count
+    dailyChallenge:{ date:null, completed:false }
+  };
+}
+
+let profile = loadProfile();
+let settings = { duration:60, category:"general", difficulty:"beginner" };
+
+function loadProfile(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(!raw) return freshProfile();
+    const parsed = JSON.parse(raw);
+    return Object.assign(freshProfile(), parsed);
+  }catch(e){ return freshProfile(); }
+}
+function saveProfile(){
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(profile)); }catch(e){ /* storage unavailable */ }
+}
+
+/* XP needed to go from levelN to levelN+1 */
+function xpForLevel(lvl){ return 80 + (lvl - 1) * 24; }
+
+function currentLevelProgress(){
+  let lvl = 1, xpLeft = profile.xp, needed = xpForLevel(lvl);
+  while(xpLeft >= needed && lvl < 999){
+    xpLeft -= needed; lvl++; needed = xpForLevel(lvl);
+  }
+  return { level: lvl, xpIntoLevel: xpLeft, xpNeeded: needed };
+}
+
+/* ============================================================
+   UTIL
+   ============================================================ */
+function $(id){ return document.getElementById(id); }
+function todayStr(){ const d = new Date(); return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate(); }
+function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+function clamp(n,a,b){ return Math.max(a, Math.min(b,n)); }
+
+function seededRandom(seed){
+  let s = seed % 2147483647; if (s <= 0) s += 2147483646;
+  return function(){ s = (s * 16807) % 2147483647; return (s - 1) / 2147483646; };
+}
+function hashStr(str){
+  let h = 0;
+  for(let i=0;i<str.length;i++){ h = (h*31 + str.charCodeAt(i)) | 0; }
+  return Math.abs(h);
+}
+
+function toast(msg){
+  const wrap = $("toastWrap");
+  const el = document.createElement("div");
+  el.className = "toast";
+  el.textContent = msg;
+  wrap.appendChild(el);
+  setTimeout(()=>{ el.style.opacity="0"; el.style.transform="translateX(120%)"; el.style.transition=".3s"; setTimeout(()=>el.remove(),320); }, 3200);
+}
+
+/* ============================================================
+   SOUND (WebAudio, no external files)
+   ============================================================ */
+let audioCtx = null;
+function getCtx(){
+  if(!audioCtx){
+    try{ audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }catch(e){ return null; }
+  }
+  return audioCtx;
+}
+function beep(freq, dur, type, vol){
+  const ctx = getCtx(); if(!ctx) return;
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = type || "sine";
+  osc.frequency.value = freq;
+  gain.gain.value = (vol !== undefined ? vol : 0.05);
+  osc.connect(gain); gain.connect(ctx.destination);
+  osc.start();
+  gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + dur);
+  osc.stop(ctx.currentTime + dur);
+}
+function sndKey(correct){ beep(correct ? 620 : 190, 0.05, "square", 0.03); }
+function sndComplete(){ [520,660,880].forEach((f,i)=> setTimeout(()=>beep(f,0.18,"sine",0.06), i*90)); }
+function sndLevelUp(){ [440,554,659,880].forEach((f,i)=> setTimeout(()=>beep(f,0.22,"triangle",0.07), i*100)); }
+
+/* ============================================================
+   CONFETTI (canvas, no external libs)
+   ============================================================ */
+const confettiCanvas = $("confetti-canvas");
+const cctx = confettiCanvas.getContext("2d");
+function resizeCanvas(){ confettiCanvas.width = innerWidth; confettiCanvas.height = innerHeight; }
+resizeCanvas(); addEventListener("resize", resizeCanvas);
+
+function confettiBurst(){
+  const colors = ["#e24e3f","#4fd1a5","#e8b94d","#4f8ee8","#c04fe8"];
+  const particles = [];
+  for(let i=0;i<120;i++){
+    particles.push({
+      x: confettiCanvas.width/2, y: confettiCanvas.height/3,
+      vx: (Math.random()-0.5)*14, vy: (Math.random()-1.4)*12,
+      size: 4+Math.random()*5, color: colors[Math.floor(Math.random()*colors.length)],
+      rot: Math.random()*360, vr: (Math.random()-0.5)*10, life:0
+    });
+  }
+  let frame = 0;
+  function tick(){
+    cctx.clearRect(0,0,confettiCanvas.width,confettiCanvas.height);
+    frame++;
+    let alive = false;
+    particles.forEach(p=>{
+      if(p.life > 90) return;
+      alive = true;
+      p.vy += 0.35; p.x += p.vx; p.y += p.vy; p.rot += p.vr; p.life++;
+      cctx.save();
+      cctx.translate(p.x,p.y); cctx.rotate(p.rot*Math.PI/180);
+      cctx.fillStyle = p.color; cctx.globalAlpha = clamp(1 - p.life/90, 0, 1);
+      cctx.fillRect(-p.size/2,-p.size/2,p.size,p.size);
+      cctx.restore();
+    });
+    if(alive) requestAnimationFrame(tick);
+    else cctx.clearRect(0,0,confettiCanvas.width,confettiCanvas.height);
+  }
+  tick();
+}
+
+/* ============================================================
+   VIEW ROUTER
+   ============================================================ */
+function showView(name){
+  document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));
+  const el = $("view-"+name);
+  if(el) el.classList.add("active");
+  document.querySelectorAll(".navtab").forEach(t=>t.classList.toggle("active", t.dataset.view===name));
+  if(name === "profile") renderProfileView();
+  if(name === "achievements") renderAchievements();
+  if(name === "leaderboard") renderLeaderboard();
+  if(name === "heatmap") renderHeatmap();
+  if(name === "setup") renderSetupView();
+}
+document.querySelectorAll(".navtab").forEach(t=>{
+  t.addEventListener("click", ()=> showView(t.dataset.view));
+});
+
+/* ============================================================
+   THEME
+   ============================================================ */
+const THEME_KEY = "keystroke_theme";
+function applyTheme(t){
+  document.body.setAttribute("data-theme", t);
+  $("themeSelect").value = t;
+  try{ localStorage.setItem(THEME_KEY, t); }catch(e){}
+}
+$("themeSelect").addEventListener("change", e=> applyTheme(e.target.value));
+applyTheme((function(){ try{ return localStorage.getItem(THEME_KEY) || "ink"; }catch(e){ return "ink"; } })());
+
+/* ============================================================
+   SETUP VIEW RENDER + INTERACTIONS
+   ============================================================ */
+function buildCategoryOptions(){
+  const wrap = $("categoryOptions");
+  wrap.innerHTML = "";
+  Object.keys(CATEGORY_META).forEach(key=>{
+    const meta = CATEGORY_META[key];
+    const btn = document.createElement("button");
+    btn.className = "option-btn" + (settings.category===key ? " selected":"");
+    btn.dataset.cat = key;
+    btn.innerHTML = meta.icon + "<small>"+meta.label+"</small>";
+    btn.addEventListener("click", ()=>{
+      settings.category = key;
+      wrap.querySelectorAll(".option-btn").forEach(b=>b.classList.toggle("selected", b.dataset.cat===key));
+    });
+    wrap.appendChild(btn);
+  });
+}
+buildCategoryOptions();
+
+$("durationOptions").querySelectorAll(".option-btn").forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    $("durationOptions").querySelectorAll(".option-btn").forEach(b=>b.classList.remove("selected"));
+    btn.classList.add("selected");
+    if(btn.dataset.dur === "custom"){
+      $("customTimerWrap").style.display = "flex";
+      settings.duration = clamp(parseInt($("customSeconds").value)||90, 5, 3600);
+    } else {
+      $("customTimerWrap").style.display = "none";
+      settings.duration = parseInt(btn.dataset.dur);
+    }
+  });
+});
+$("customSeconds").addEventListener("input", ()=>{
+  settings.duration = clamp(parseInt($("customSeconds").value)||5, 5, 3600);
+});
+
+$("difficultyOptions").querySelectorAll(".option-btn").forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    $("difficultyOptions").querySelectorAll(".option-btn").forEach(b=>b.classList.remove("selected"));
+    btn.classList.add("selected");
+    settings.difficulty = btn.dataset.diff;
+  });
+});
+
+$("startBtn").addEventListener("click", ()=> startSession(false));
+$("dailyBtn").addEventListener("click", ()=> startDailyChallenge());
+
+function renderSetupView(){
+  const prog = currentLevelProgress();
+  $("pmLevelNum").textContent = prog.level;
+  $("pmLevelLabel").textContent = "Level " + prog.level;
+  $("pmBadgeRing").style.setProperty("--xp-pct", Math.round((prog.xpIntoLevel/prog.xpNeeded)*100));
+  $("pmXpFill").style.width = Math.round((prog.xpIntoLevel/prog.xpNeeded)*100) + "%";
+  $("pmXpText").textContent = prog.xpIntoLevel + " / " + prog.xpNeeded + " XP";
+  $("pmBestWpm").textContent = profile.bestWPM;
+  $("pmAvgAcc").textContent = (profile.sessionsForAvg ? Math.round(profile.accuracySum/profile.sessionsForAvg) : 0) + "%";
+  $("hudCoins").textContent = profile.coins;
+  $("hudStreak").textContent = profile.streak;
+
+  const dc = getDailyChallengeMeta();
+  $("dailyDesc").textContent = dc.completed
+    ? "Completed today ✔ — come back tomorrow for a new one."
+    : (CATEGORY_META[dc.category].label + " · " + dc.difficulty + " · +" + dc.bonusXp + " bonus XP");
+  $("dailyBtn").textContent = dc.completed ? "Done" : "Start";
+  $("dailyBtn").disabled = dc.completed;
+  $("dailyBtn").style.opacity = dc.completed ? .5 : 1;
+
+  const list = $("recentHistory");
+  const recent = profile.sessions.slice(-5).reverse();
+  if(!recent.length){
+    list.innerHTML = '<div class="empty-note">No sessions yet — type something!</div>';
+  } else {
+    list.innerHTML = recent.map(s=>(
+      '<div class="history-item"><div><b>'+s.wpm+' WPM</b> · '+s.accuracy+'% acc<br><span>'+CATEGORY_META[s.category].label+' · '+s.difficulty+'</span></div><span>'+new Date(s.date).toLocaleDateString()+'</span></div>'
+    )).join("");
+  }
+}
+
+/* ============================================================
+   DAILY CHALLENGE
+   ============================================================ */
+function getDailyChallengeMeta(){
+  const seedBase = hashStr(todayStr());
+  const rng = seededRandom(seedBase);
+  const cats = Object.keys(CATEGORY_META);
+  const diffs = ["beginner","intermediate","advanced"];
+  const category = cats[Math.floor(rng()*cats.length)];
+  const difficulty = diffs[Math.floor(rng()*diffs.length)];
+  const passages = PASSAGES[category][difficulty];
+  const passage = passages[Math.floor(rng()*passages.length)];
+  const completed = profile.dailyChallenge.date === todayStr() && profile.dailyChallenge.completed;
+  return { category, difficulty, passage, bonusXp: 60, bonusCoins: 25, completed, duration: 60 };
+}
+function startDailyChallenge(){
+  const dc = getDailyChallengeMeta();
+  if(dc.completed){ toast("You already finished today's challenge — come back tomorrow!"); return; }
+  startSession(true, dc);
+}
+
+/* ============================================================
+   TYPING SESSION ENGINE
+   ============================================================ */
+let session = null; // {passage, index, correctCount, mistakeCount, startTime, timerId, duration, ...}
+
+function complexityBoost(text, level){
+  // Beyond base difficulty, higher overall profile level sprinkles in a little extra
+  // numeric/symbolic complexity for variety & the "difficulty progression" mechanic.
+  if(level < 5) return text;
+  const extras = [" (v"+ (1+level%9) +")", " #"+ (100+level), " ~"+ (level%12) +"%", " @L"+level];
+  const rng = seededRandom(level*97 + text.length);
+  if(rng() < clamp(0.15 + level*0.01, 0.15, 0.6)){
+    const words = text.split(" ");
+    const pos = Math.floor(rng()*Math.max(1,words.length-2))+1;
+    words[pos] = words[pos] + pick(extras);
+    return words.join(" ");
+  }
+  return text;
+}
+
+function pickPassage(category, difficulty){
+  const prog = currentLevelProgress();
+  const base = pick(PASSAGES[category][difficulty]);
+  return complexityBoost(base, prog.level);
+}
+
+function startSession(isDaily, dailyMeta){
+  const prog = currentLevelProgress();
+  const category = isDaily ? dailyMeta.category : settings.category;
+  const difficulty = isDaily ? dailyMeta.difficulty : settings.difficulty;
+  const duration = isDaily ? dailyMeta.duration : settings.duration;
+  const passage = isDaily ? dailyMeta.passage : pickPassage(category, difficulty);
+
+  session = {
+    passage, category, difficulty, duration,
+    typed: [],              // array of {ch, status: 'correct'|'incorrect'}
+    index: 0,
+    mistakeCount: 0,
+    totalKeystrokes: 0,
+    startTime: null,
+    timeLeft: duration,
+    timerId: null,
+    finished: false,
+    isDaily: !!isDaily,
+    level: prog.level
+  };
+
+  $("typLevel").textContent = prog.level;
+  $("typCatDiff").textContent = CATEGORY_META[category].label + " / " + difficulty[0].toUpperCase()+difficulty.slice(1) + (isDaily ? " · Daily Challenge 🎯" : "");
+  $("statTime").textContent = duration;
+  $("progressFill").style.width = "0%";
+  $("statWpm").textContent="0"; $("statCpm").textContent="0"; $("statAcc").textContent="100%"; $("statMistakes").textContent="0";
+  $("typeOverlay").style.display = "flex";
+  $("typeArea").classList.add("blurred");
+
+  renderPassage();
+  showView("typing");
+  $("hiddenInput").value = "";
+  setTimeout(()=> $("hiddenInput").focus(), 50);
+}
+
+function renderPassage(){
+  const content = $("typeContent");
+  const p = session.passage;
+  let html = "";
+  for(let i=0;i<p.length;i++){
+    const ch = p[i] === " " ? "&nbsp;" : escapeHtml(p[i]);
+    let cls = "pending";
+    if(i < session.index) cls = session.typed[i] && session.typed[i].status === "incorrect" ? "incorrect" : "correct";
+    else if(i === session.index) cls = "current";
+    html += '<span class="ch '+cls+'">'+ch+'</span>';
+  }
+  content.innerHTML = html;
+}
+function escapeHtml(s){
+  return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+
+function beginTimerIfNeeded(){
+  if(session.startTime) return;
+  session.startTime = Date.now();
+  session.timerId = setInterval(tick, 250);
+}
+function tick(){
+  if(!session || session.finished) return;
+  const elapsed = (Date.now() - session.startTime)/1000;
+  session.timeLeft = Math.max(0, session.duration - elapsed);
+  $("statTime").textContent = Math.ceil(session.timeLeft);
+  updateLiveStats(elapsed);
+  if(session.timeLeft <= 0){ endSession(); }
+}
+function updateLiveStats(elapsedSecOverride){
+  const elapsed = elapsedSecOverride !== undefined ? elapsedSecOverride : (session.startTime ? (Date.now()-session.startTime)/1000 : 0);
+  const minutes = Math.max(elapsed/60, 1/60);
+  const correctChars = session.typed.filter(t=>t && t.status==="correct").length;
+  const wpm = Math.round((correctChars/5)/minutes) || 0;
+  const cpm = Math.round(correctChars/minutes) || 0;
+  const acc = session.totalKeystrokes ? Math.round((correctChars/session.totalKeystrokes)*100) : 100;
+  $("statWpm").textContent = wpm;
+  $("statCpm").textContent = cpm;
+  $("statAcc").textContent = acc + "%";
+  $("statMistakes").textContent = session.mistakeCount;
+  $("progressFill").style.width = Math.round((session.index/session.passage.length)*100) + "%";
+}
+
+/* input handling: hidden text input captures keystrokes (works for mobile keyboards too) */
+const hiddenInput = $("hiddenInput");
+$("typeArea").addEventListener("click", ()=>{
+  if(!session || session.finished) return;
+  $("typeOverlay").style.display = "none";
+  $("typeArea").classList.remove("blurred");
+  hiddenInput.focus();
+});
+
+hiddenInput.addEventListener("keydown", (e)=>{
+  if(!session || session.finished) return;
+  if($("typeOverlay").style.display !== "none") return; // require a tap first
+  if(e.key === "Backspace"){
+    e.preventDefault();
+    if(session.index > 0){
+      session.index--;
+      session.typed[session.index] = null;
+      renderPassage();
+      updateLiveStats();
+    }
+    return;
+  }
+  if(e.key.length !== 1) return; // ignore Shift, Tab, Enter, arrows, etc.
+  e.preventDefault();
+  beginTimerIfNeeded();
+
+  const expected = session.passage[session.index];
+  const correct = e.key === expected;
+  session.typed[session.index] = { ch:e.key, status: correct ? "correct":"incorrect" };
+  session.totalKeystrokes++;
+  if(!correct) session.mistakeCount++;
+  logKeyError(expected, correct);
+  sndKey(correct);
+  session.index++;
+
+  renderPassage();
+  updateLiveStats();
+  scrollCurrentIntoView();
+
+  if(session.index >= session.passage.length){
+    endSession();
+  }
+});
+// Also support mobile "input" events (some mobile keyboards don't fire clean keydown for chars)
+hiddenInput.addEventListener("beforeinput", (e)=>{
+  // We fully manage state ourselves; prevent the input's own value from growing unbounded
+});
+hiddenInput.addEventListener("input", ()=>{ hiddenInput.value = ""; });
+
+function scrollCurrentIntoView(){
+  const current = document.querySelector(".ch.current");
+  if(current) current.scrollIntoView({ block:"nearest" });
+}
+
+$("restartBtn").addEventListener("click", ()=>{
+  if(!session) return;
+  clearInterval(session.timerId);
+  const keep = { category:session.category, difficulty:session.difficulty, duration:session.duration, isDaily:session.isDaily, passage:session.passage };
+  session = {
+    passage: keep.passage, category:keep.category, difficulty:keep.difficulty, duration:keep.duration,
+    typed:[], index:0, mistakeCount:0, totalKeystrokes:0, startTime:null, timeLeft:keep.duration,
+    timerId:null, finished:false, isDaily:keep.isDaily, level: currentLevelProgress().level
+  };
+  $("statTime").textContent = keep.duration;
+  $("statWpm").textContent="0"; $("statCpm").textContent="0"; $("statAcc").textContent="100%"; $("statMistakes").textContent="0";
+  $("progressFill").style.width="0%";
+  $("typeOverlay").style.display = "flex";
+  $("typeArea").classList.add("blurred");
+  renderPassage();
+});
+
+$("exitBtn").addEventListener("click", ()=>{
+  if(session) clearInterval(session.timerId);
+  session = null;
+  showView("setup");
+});
+
+function logKeyError(expectedChar, correct){
+  if(correct) return;
+  const key = expectedChar === " " ? "␣" : expectedChar.toLowerCase();
+  profile.keyErrors[key] = (profile.keyErrors[key]||0) + 1;
+}
+
+/* ============================================================
+   END OF SESSION -> SCORING, REWARDS, PERSIST
+   ============================================================ */
+function endSession(){
+  if(!session || session.finished) return;
+  session.finished = true;
+  clearInterval(session.timerId);
+
+  const elapsed = session.startTime ? (Date.now()-session.startTime)/1000 : 0;
+  const minutes = Math.max(elapsed/60, 1/60);
+  const correctChars = session.typed.filter(t=>t && t.status==="correct").length;
+  const wpm = Math.round((correctChars/5)/minutes) || 0;
+  const cpm = Math.round(correctChars/minutes) || 0;
+  const acc = session.totalKeystrokes ? Math.round((correctChars/session.totalKeystrokes)*100) : 100;
+
+  let xp = Math.round(correctChars*0.6 + wpm*2);
+  let coins = Math.round(xp/8);
+  if(session.isDaily){ xp += 60; coins += 25; }
+
+  const streakInfo = updateStreak();
+
+  const sessionRecord = {
+    date: Date.now(), wpm, cpm, accuracy:acc, mistakes:session.mistakeCount,
+    chars: session.totalKeystrokes, duration: Math.round(elapsed), category:session.category,
+    difficulty:session.difficulty, xp, coins, daily:session.isDaily
+  };
+
+  const prevLevel = currentLevelProgress().level;
+  profile.xp += xp;
+  profile.coins += coins;
+  profile.accuracySum += acc; profile.sessionsForAvg++;
+  if(wpm > profile.bestWPM) profile.bestWPM = wpm;
+  profile.sessions.push(sessionRecord);
+  if(profile.sessions.length > 500) profile.sessions.shift();
+  if(session.isDaily){ profile.dailyChallenge = { date: todayStr(), completed:true }; }
+
+  const newLevel = currentLevelProgress().level;
+  profile.level = newLevel;
+
+  const newAchievements = [];
+  ACHIEVEMENTS.forEach(a=>{
+    if(profile.achievements.includes(a.id)) return;
+    if(a.check(sessionRecord, profile)){
+      profile.achievements.push(a.id);
+      newAchievements.push(a);
+    }
+  });
+
+  saveProfile();
+
+  $("resWpm").textContent = wpm;
+  $("resAcc").textContent = acc + "%";
+  $("resCpm").textContent = cpm;
+  $("resMistakes").textContent = session.mistakeCount;
+  $("resChars").textContent = session.totalKeystrokes;
+  $("resTime").textContent = Math.round(elapsed) + "s";
+  $("resBest").textContent = profile.bestWPM;
+  $("resXp").textContent = "+" + xp;
+  $("resCoins").textContent = "+" + coins;
+
+  const rewardStrip = $("rewardStrip");
+  rewardStrip.innerHTML = "";
+  newAchievements.forEach(a=>{
+    const pill = document.createElement("div");
+    pill.className = "reward-pill";
+    pill.innerHTML = a.icon + " " + a.name;
+    rewardStrip.appendChild(pill);
+  });
+  if(streakInfo.increased){
+    const pill = document.createElement("div");
+    pill.className = "reward-pill";
+    pill.innerHTML = "🔥 " + profile.streak + "-day streak!";
+    rewardStrip.appendChild(pill);
+  }
+
+  $("continueBtn").style.display = "inline-block";
+  $("continueBtn").textContent = "Continue to Level " + (newLevel) + " →";
+
+  showView("results");
+  sndComplete();
+  if(newLevel > prevLevel){ setTimeout(sndLevelUp, 500); toast("🎉 Level up! You're now level " + newLevel); }
+  if(newAchievements.length || wpm >= 40) confettiBurst();
+}
+
+function updateStreak(){
+  const today = todayStr();
+  if(profile.lastPracticeDay === today) return { increased:false };
+  const y = new Date(); y.setDate(y.getDate()-1);
+  const yesterday = y.getFullYear()+"-"+(y.getMonth()+1)+"-"+y.getDate();
+  if(profile.lastPracticeDay === yesterday) profile.streak += 1;
+  else profile.streak = 1;
+  profile.lastPracticeDay = today;
+  return { increased:true };
+}
+
+$("continueBtn").addEventListener("click", ()=>{
+  startSession(false);
+});
+$("retryBtn").addEventListener("click", ()=>{
+  const cat = session ? session.category : settings.category;
+  const diff = session ? session.difficulty : settings.difficulty;
+  settings.category = cat; settings.difficulty = diff;
+  startSession(false);
+});
+$("backToSetupBtn").addEventListener("click", ()=> showView("setup"));
+
+/* ============================================================
+   PROFILE VIEW
+   ============================================================ */
+function renderProfileView(){
+  const prog = currentLevelProgress();
+  $("p_xp").textContent = profile.xp;
+  $("p_coins").textContent = profile.coins;
+  $("p_level").textContent = prog.level;
+  $("p_bestwpm").textContent = profile.bestWPM;
+  $("p_avgacc").textContent = (profile.sessionsForAvg ? Math.round(profile.accuracySum/profile.sessionsForAvg) : 0) + "%";
+  $("p_sessions").textContent = profile.sessions.length;
+  $("p_streak").textContent = profile.streak;
+  $("p_achievements").textContent = profile.achievements.length + " / " + ACHIEVEMENTS.length;
+
+  const list = $("fullHistory");
+  const items = profile.sessions.slice().reverse();
+  if(!items.length){ list.innerHTML = '<div class="empty-note">Nothing here yet.</div>'; return; }
+  list.innerHTML = items.map(s=>(
+    '<div class="history-item"><div><b>'+s.wpm+' WPM</b> · '+s.accuracy+'% acc · '+s.mistakes+' mistakes<br>'+
+    '<span>'+CATEGORY_META[s.category].label+' · '+s.difficulty+(s.daily?' · Daily 🎯':'')+'</span></div>'+
+    '<span>'+new Date(s.date).toLocaleString()+'</span></div>'
+  )).join("");
+}
+
+/* ============================================================
+   ACHIEVEMENTS VIEW
+   ============================================================ */
+function renderAchievements(){
+  const grid = $("achGrid");
+  grid.innerHTML = ACHIEVEMENTS.map(a=>{
+    const earned = profile.achievements.includes(a.id);
+    return '<div class="badge-card '+(earned?'':'locked')+'"><div class="icon">'+a.icon+'</div><b>'+a.name+'</b><p>'+a.desc+'</p></div>';
+  }).join("");
+}
+
+/* ============================================================
+   LEADERBOARD VIEW (local personal bests)
+   ============================================================ */
+function renderLeaderboard(){
+  const body = $("lbBody");
+  const top = profile.sessions.slice().sort((a,b)=> b.wpm - a.wpm).slice(0,10);
+  if(!top.length){ body.innerHTML = '<tr><td colspan="6" class="empty-note">Complete a session to appear here.</td></tr>'; return; }
+  body.innerHTML = top.map((s,i)=>(
+    '<tr><td class="rank">#'+(i+1)+'</td><td>'+s.wpm+'</td><td>'+s.accuracy+'%</td><td>'+CATEGORY_META[s.category].label+'</td><td>'+s.duration+'s</td><td>'+new Date(s.date).toLocaleDateString()+'</td></tr>'
+  )).join("");
+}
+
+/* ============================================================
+   HEATMAP VIEW
+   ============================================================ */
+const KEY_ROWS = [
+  "1234567890",
+  "qwertyuiop",
+  "asdfghjkl",
+  "zxcvbnm"
+];
+function renderHeatmap(){
+  const grid = $("heatmapGrid");
+  const errors = profile.keyErrors || {};
+  const max = Math.max(1, ...Object.values(errors));
+  grid.innerHTML = "";
+  KEY_ROWS.forEach(row=>{
+    const rowDiv = document.createElement("div");
+    rowDiv.className = "heatmap-key-row";
+    row.split("").forEach(k=>{
+      const count = errors[k] || 0;
+      const intensity = count / max;
+      const el = document.createElement("div");
+      el.className = "hkey";
+      el.textContent = k;
+      if(count > 0){
+        el.style.background = "color-mix(in srgb, var(--incorrect) " + Math.round(20 + intensity*70) + "%, var(--surface-2))";
+        el.style.color = "#fff";
+        el.title = count + " mistakes";
+      }
+      rowDiv.appendChild(el);
+    });
+    grid.appendChild(rowDiv);
+  });
+  // space bar
+  const spaceRow = document.createElement("div");
+  spaceRow.className = "heatmap-key-row";
+  const spaceEl = document.createElement("div");
+  spaceEl.className = "hkey"; spaceEl.style.flex = "6"; spaceEl.textContent = "space";
+  const spaceCount = errors["␣"] || 0;
+  if(spaceCount>0){ spaceEl.style.background = "color-mix(in srgb, var(--incorrect) " + Math.round(20+ (spaceCount/max)*70) + "%, var(--surface-2))"; spaceEl.style.color="#fff"; }
+  spaceRow.appendChild(spaceEl);
+  grid.appendChild(spaceRow);
+
+  const errList = $("errorList");
+  const sorted = Object.entries(errors).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  if(!sorted.length){ errList.innerHTML = '<div class="empty-note">No mistakes logged yet — great job, or you have not typed yet!</div>'; return; }
+  errList.innerHTML = sorted.map(([k,c])=> '<div class="history-item"><b>"'+k+'"</b><span>'+c+' mistakes</span></div>').join("");
+}
+
+/* ============================================================
+   INIT
+   ============================================================ */
+renderSetupView();
+document.addEventListener("visibilitychange", ()=>{
+  if(document.hidden && session && !session.finished){
+    // keep timer running in background via timestamps; nothing extra needed since we use Date.now()
+  }
+});
+
+})();
+</script>
+</body>
+</html>
